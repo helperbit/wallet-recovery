@@ -1,0 +1,141 @@
+
+<html lang="en" ng-app="walletRecovery">
+<head>
+    <meta charset="utf-8">
+	<meta http-equiv="cache-control" content="no-cache, no-store">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- FB OG TAGS -->
+    <meta property="og:title" content="Helperbit: wallet recovery tool"/>
+
+    <!-- CLASSIC HTML TAGS -->
+    <meta name="keywords" content="Bitcoin,P2P,Natural Disaster,cryptocurrency,charity,earthquake,donation,transparency,humanitarian,assistance,emergency,ngo,ingo,disaster management,emergency relief,flood,wildfire,tzunami,gis,insurtech">
+
+
+    <link rel="icon" type="image/png" href="img/fav64black.png">
+
+    <title>Helperbit: wallet recovery tool</title>
+
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+	<script type="text/javascript" src="bower_components/ng-file-upload-shim/ng-file-upload-shim.min.js"></script>
+	<script type="text/javascript" src="bower_components/ng-file-upload-shim/ng-file-upload.min.js"></script>
+    <script type="text/javascript" src="lib/bitcoinjs.min.js"></script>
+    <script type="text/javascript" src="lib/bip39.js"></script>
+    <script type="text/javascript" src="js/wallet-recovery.js"></script>
+</head>
+
+<body ng-controller="RecoveryCtrl">
+    <nav id="mymenu"  class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid"><div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+            <a class="navbar-brand" href="#home"><img src="img/logo_white.svg" height="30px" /></a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav hidden-sm hidden-xs" style="padding-left: 2em;">
+            <li ng-class="{ active: tab == 'home' }"><a href="" ng-click="tab='home'">Home</a></li>
+            <li ng-class="{ active: tab == 'user' }"><a href="" ng-click="switchTab ('user')">Single user</a></li>
+            <li ng-class="{ active: tab == 'npo' }"><a href="" ng-click="switchTab ('npo')">Organization</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right" style="background-color: #feb737;">
+            <li class=""><a target="_blank" href="http://www.helperbit.com">About Helperbit</a></li>
+        </ul>
+        </div>
+        </div>
+    </nav>
+    <div style="height: 70px"></div>
+
+    <div class="container" ng-if="tab == 'home'">
+        <h1>Helperbit wallet recovery tool</h1>
+        <p>
+            Helperbit wallet recovery is a tool that Helperbit has developed for ease of mind of its users: 
+            its function is to free funds from your Helperbit wallet without our intervertion.
+            <br>
+            This means that should we disappear for any reason, including out of our control, 
+            your funds are still available to you.
+            <br>
+            Helperbit wallet recovery can be downloaded from GitHub as a Zip (works with the Browser).
+        </p>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-12" align="center">
+                <h4>Select the type of wallet you want to recover:</h4>
+                <br>
+            </div>
+
+            <div class="col-md-3"></div>
+            <div class="col-md-3" align="center">
+                <i class="fa fa-4x fa-user"></i>
+                <br>
+                <br>
+                <button class="btn btn-red" ng-click="switchTab ('user')">Single user wallet</button>
+            </div>
+            <div class="col-md-3" align="center">
+                <i class="fa fa-4x fa-users"></i>
+                <br>
+                <br>
+                <button class="btn btn-red" ng-click="switchTab ('npo')">Organization wallet</button>
+            </div>
+            <div class="col-md-3"></div>
+
+        </div>
+    </div>
+
+    <!-- Single user -->
+    <div class="container" ng-if="tab == 'user'">
+        <h1>Single user wallet recovery</h1>
+        <p>Insert the mnemonic, backup file and backup password, and put a valid Bitcoin address. Your funds will
+            be sent to this address.</p>
+
+        <div class="alert alert-danger" ng-if="user.error != ''">
+            <span ng-if="user.error == 'XNJ'">Can't load the file or this is not a backup file</span>
+            <span ng-if="user.error == 'XNF'">Can't load the file</span>
+        </div>
+
+        <div class="form-group">
+            <label for="inMnemonic">Mnemonic (12 words passphrase):</label>
+            <input ng-model="user.mnemonic" type="text" class="form-control" id="inMnemonic" placeholder="Mnemonic">
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label for="inBack">Backup file:</label>
+                    <input accept="application/json"  ngf-select="loadUserBackupFile($file);" type="file" class="form-control" id="inBack" placeholder="">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="inBackpass">Backup file password:</label>
+                    <input ng-model="user.backup.password" type="password" class="form-control" id="inBackpass" placeholder="Mnemonic">
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inAddress">Destination Bitcoin address:</label>
+            <input ng-model="user.address" type="text" class="form-control" id="inAddress" placeholder="Address">
+        </div>
+        <button class="btn btn-red btn-block" ng-click="recoverUser()">Recover your funds</button>
+    </div>
+</body>
+</html>
