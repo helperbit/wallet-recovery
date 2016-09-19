@@ -4,8 +4,8 @@ var walletRecovery = angular.module('walletRecovery', [
 
 
 walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
-    var bnetwork = bitcoin.networks.testnet;
-	var cnetwork = 'BTCTEST';
+    var bnetwork = bitcoin.networks.bitcoin;
+	var cnetwork = 'BTC';
 	var fee = 0.002;
 
     $scope.tab = 'home';
