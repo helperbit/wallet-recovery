@@ -3,14 +3,17 @@ var walletRecovery = angular.module('walletRecovery', [
 ]);
 
 
-walletRecovery.controller('RecoveryCtrl', function($scope) {
+walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
     var bnetwork = bitcoin.networks.testnet;
+	var cnetwork = 'BTCTEST';
+	var fee = 0.002;
 
     $scope.tab = 'home';
+	$scope.transaction = { address: '', txid: '' };
 
     $scope.switchTab = function (t) { 
         $scope.tab = t;
-        
+
         switch (t) {
             case 'user':
                 $scope.user = { 
@@ -18,7 +21,8 @@ walletRecovery.controller('RecoveryCtrl', function($scope) {
                     backpass: '',
                     address: '',
                     backup: { file: '', data: {}, password: '' },
-                    error: ''
+                    error: '',
+					loading: false
                 };
                 break;
 
@@ -74,55 +78,84 @@ walletRecovery.controller('RecoveryCtrl', function($scope) {
 			return str;
 		};
 			
+		loading = true;
+
 		var privkeye = CryptoJS.AES.decrypt($scope.user.backup.data.encprivkey, $scope.user.backup.password, {iv: $scope.user.backup.password});
-		var privkey = hex2a (privkeye.toString ());
+		var priv2 = hex2a (privkeye.toString ());
 			
-		var upair = null;
+		var pair2 = null;
 		try {
-			upair = bitcoin.ECPair.fromWIF (privkey, bnetwork);
+			pair2 = bitcoin.ECPair.fromWIF (priv2, bnetwork);
 		} catch (e) {
 			$scope.user.error = 'XWP';
+			loading = false;
 			return;
 		}
 			
-		var pubcomputed = upair.getPublicKeyBuffer ().toString ('hex');
-		if (pubcomputed != $scope.user.backup.data.pubkey) {
+		var pub2 = pair2.getPublicKeyBuffer ().toString ('hex');
+		if (pub2 != $scope.user.backup.data.pubkey) {
 			$scope.user.error = 'XWP';
+			loading = false;
 			return;
 		}
-			
-		var wreq = {
-			fee: $scope.evaluteFee (2, 1, true), 
-			value: wallet.balance, 
-			destination: $scope.user.address
-		};
-			
-		/* Send the refund transaction */
-		$http.post (config.apiUrl+'/wallet/' + wallet.address + '/withdraw', wreq).success(function(data){
-			var txhex = data.txhex;
 
-			var txb = new bitcoin.TransactionBuilder.fromTransaction (bitcoin.Transaction.fromHex (txhex), bnetwork);
-			var pubkeys_raw = wallet.pubkeys.map(function (hex) { return new buffer.Buffer(hex, 'hex'); });
-			var redeemScript = bitcoin.script.multisigOutput(2, pubkeys_raw);
+		/* Decrypt the mnemonic */
+		var seed = bip39.mnemonicToSeed ($scope.user.mnemonic);
+		var hd = bitcoin.HDNode.fromSeedBuffer (seed, bnetwork);
 
-			for (var j = 0; j < txb.tx.ins.length; j++)
-				txb.sign (j, upair, redeemScript);
+		var pair1 = hd.keyPair;
+		var priv1 = pair1.toWIF ();
+		var pub1 = pair1.getPublicKeyBuffer ().toString ('hex');
+
+		if ($scope.user.backup.data.pubkeys.indexOf (pub1) == -1) {
+			$scope.user.error = 'XWM';
+			loading = false;
+			return;
+		}
+		
+		var pubkeys_raw = $scope.user.backup.data.pubkeys.map(function (hex /*: string*/) { return new buffer.Buffer (hex, 'hex'); });
+		var redeemScript = bitcoin.script.multisigOutput(2, pubkeys_raw);
+
+		/* Get unspent */
+		$http.get ('https://chain.so/api/v2/get_tx_unspent/' + cnetwork + '/' + $scope.user.backup.data.address).success (function (data) {
+			var txs = data.data.txs;
+			var txb = new bitcoin.TransactionBuilder (bnetwork);
+			var cumulative = 0.0;
+
+			for (var i = 0; i < txs.length; i++) {
+				cumulative += parseFloat (txs[i].value);
+				txb.addInput (txs[i].txid, txs[i].output_no);
+			}
+
+			if (cumulative == 0 || cumulative - fee < 0) {
+				$scope.user.error = 'XWE';
+				return;
+			}
+
+			try {
+				txb.addOutput($scope.user.address, Math.floor ((cumulative - fee) * 100000000));
+			} catch (err) {
+				$scope.user.error = 'XWD';
+				return;
+			}
+
+			/* Add signatures */
+			for (var j = 0; j < txb.tx.ins.length; j++) {
+				txb.sign (j, pair1, redeemScript);
+				txb.sign (j, pair2, redeemScript);
+			}
+
+			/* Create the signed transaction */
 			var tx = txb.build ();
-			txhex = tx.toHex ();
+			var txhex = tx.toHex ();
 
-			var wreq = { txhex: txhex };
-
-			$http.post (config.apiUrl+'/wallet/' + wallet.address + '/send', wreq).success(function(data){
-				$scope.backup.txid = data.txid;
-				
-				$scope.backup.loading = false;
-				$scope.reloadWallet ();
+			/* Broadcast */
+			$http.post ('https://chain.so/api/v2/send_tx/' + cnetwork, {tx_hex: txhex}).success (function (data) {
+				console.log (data);
+				$scope.transaction.txid = data.data.txid;
+				$scope.transaction.address = $scope.user.address;
+				$('#sentModal').modal ('show');
 			});
-		}).error (function (data){
-			$scope.backup.error = data.error;
-			$scope.backup.loading = false;
-		});	
+		});
     };
-
-    
 });
