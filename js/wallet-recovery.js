@@ -177,7 +177,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 			/* Add signatures */
 			for (var j = 0; j < txb.tx.ins.length; j++) {
-				for (var z = 0; z < $scope.npo.n; z++) {
+				for (var z = 0; z < $scope.npo.n + 1; z++) {
 					txb.sign (j, $scope.npo.backup[z].pair, redeemScript);
 				}
 			}
