@@ -6,7 +6,7 @@ var walletRecovery = angular.module('walletRecovery', [
 walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
     var bnetwork = bitcoin.networks.bitcoin;
 	var cnetwork = 'BTC';
-	var fee = 0.002;
+	var fee = 0.0002;
 
     $scope.tab = 'home';
 	$scope.transaction = { address: '', txid: '' };
