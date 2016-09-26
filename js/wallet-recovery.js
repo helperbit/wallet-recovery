@@ -79,11 +79,13 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 				if ($scope.npo.backup[i].file === null) {
 					$scope.npo.backup[i].error = 'XNF';
+					$scope.npo.loading = false;
 					return;
 				}
 					
 				if ($scope.npo.backup[i].data === null) {
 					$scope.npo.backup[i].error = 'XNJ';
+					$scope.npo.loading = false;
 					return;
 				}
 					
@@ -92,6 +94,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 					! ('pubkey' in $scope.npo.backup[i].data) ||
 					! ('walletid' in $scope.npo.backup[i].data)){
 					$scope.npo.backup[i].error = 'XNJ';
+					$scope.npo.loading = false;
 					return;
 				}
 				
@@ -191,7 +194,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			$http.post ('https://chain.so/api/v2/send_tx/' + cnetwork, {tx_hex: txhex}).success (function (data) {
 				console.log (data);
 				$scope.transaction.txid = data.data.txid;
-				$scope.transaction.address = address;
+				$scope.transaction.address = $scope.npo.address;
 				$('#sentModal').modal ('show');
 				$scope.npo.loading = false;
 			}).error (function (data) {
