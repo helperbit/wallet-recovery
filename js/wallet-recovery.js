@@ -140,7 +140,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		console.log ($scope.npo.backup);
 		
 		var pubkeys_raw = $scope.npo.pubkeys.map(function (hex /*: string*/) { return new buffer.Buffer (hex, 'hex'); });
-		var redeemScript = bitcoin.script.multisigOutput($scope.npo.n, pubkeys_raw);
+		var redeemScript = bitcoin.script.multisigOutput($scope.npo.n + 1, pubkeys_raw);
 
 
 		/* Calculate address from pubkeys */
