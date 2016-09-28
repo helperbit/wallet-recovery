@@ -3,7 +3,7 @@
     <div class="container" ng-if="tab == 'user'">
         <h1>Single user wallet recovery</h1>
         <p>Insert the mnemonic, backup file and backup password, and put a valid Bitcoin address. Your funds will
-            be sent to this address.</p>
+            be sent to the typed address.</p>
 
         <div class="alert alert-danger" ng-if="user.error != ''">
             <span ng-if="user.error == 'XNJ'">Can't load the file or this is not a backup file</span>
