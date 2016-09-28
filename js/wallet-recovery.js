@@ -162,7 +162,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		}
 
 		/* Validate number of key */
-		if ($scope.npo.pubkeys.length < ($scope.npo.n + 1)) {
+		if ($scope.npo.pubkeys.length < (parseInt ($scope.npo.n) + 1)) {
 			$scope.npo.error = 'XPL';
 			$scope.deployError ('XPL');
 			$scope.npo.loading = false;
@@ -172,7 +172,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 		/* Evalute the reedem script */
 		var pubkeys_raw = $scope.npo.pubkeys.map(function (hex /*: string*/) { return new buffer.Buffer (hex, 'hex'); });
-		var redeemScript = bitcoin.script.multisigOutput($scope.npo.n + 1, pubkeys_raw);
+		var redeemScript = bitcoin.script.multisigOutput(parseInt ($scope.npo.n) + 1, pubkeys_raw);
 
 
 		/* Calculate address from pubkeys */
@@ -211,7 +211,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 			/* Add signatures */
 			for (var j = 0; j < txb.tx.ins.length; j++) {
-				for (var z = 0; z < $scope.npo.n + 1; z++) {
+				for (var z = 0; z < parseInt ($scope.npo.n) + 1; z++) {
 					txb.sign (j, $scope.npo.backup[z].pair, redeemScript);
 				}
 			}
