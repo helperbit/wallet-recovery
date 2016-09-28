@@ -149,6 +149,8 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		console.log ($scope.npo.pubkeys);
 		console.log ($scope.npo.backup);
 		
+		//alert ($scope.npo.n + ' ' + $scope.npo.pubkeys.length);
+
 		/* Validate destination address */
 		try {
 			bitcoin.address.fromBase58Check($scope.npo.address);
@@ -160,7 +162,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		}
 
 		/* Validate number of key */
-		if ($scope.npo.pubkeys.length < $scope.npo.n + 1) {
+		if ($scope.npo.pubkeys.length < ($scope.npo.n + 1)) {
 			$scope.npo.error = 'XPL';
 			$scope.deployError ('XPL');
 			$scope.npo.loading = false;
