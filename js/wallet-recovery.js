@@ -149,7 +149,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		console.log ($scope.npo.pubkeys);
 		console.log ($scope.npo.backup);
 		
-		//alert ($scope.npo.n + ' ' + $scope.npo.pubkeys.length);
+		console.log ($scope.npo.n + ' ' + $scope.npo.pubkeys.length);
 
 		/* Validate destination address */
 		try {
