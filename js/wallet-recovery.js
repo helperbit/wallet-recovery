@@ -10,6 +10,12 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
     $scope.tab = 'home';
 	$scope.transaction = { address: '', txid: '' };
+	$scope.error = { code: '' };
+
+	$scope.deployError = function (e) {
+		$scope.error.code = e;
+		$('#errorModal').modal ('show');
+	};
 
     $scope.switchTab = function (t) { 
         $scope.tab = t;
@@ -79,12 +85,14 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 				if ($scope.npo.backup[i].file === null) {
 					$scope.npo.backup[i].error = 'XNF';
+					$scope.deployError ('XNF');
 					$scope.npo.loading = false;
 					return;
 				}
 					
 				if ($scope.npo.backup[i].data === null) {
 					$scope.npo.backup[i].error = 'XNJ';
+					$scope.deployError ('XNJ');
 					$scope.npo.loading = false;
 					return;
 				}
@@ -94,6 +102,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 					! ('pubkey' in $scope.npo.backup[i].data) ||
 					! ('walletid' in $scope.npo.backup[i].data)){
 					$scope.npo.backup[i].error = 'XNJ';
+					$scope.deployError ('XNJ');
 					$scope.npo.loading = false;
 					return;
 				}
@@ -115,6 +124,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 					pair2 = bitcoin.ECPair.fromWIF (priv2, bnetwork);
 				} catch (e) {
 					$scope.npo.backup[i].error = 'XWP';
+					$scope.deployError ('XWP');
 					$scope.npo.loading = false;
 					return;
 				}
@@ -139,6 +149,13 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		console.log ($scope.npo.pubkeys);
 		console.log ($scope.npo.backup);
 		
+		if ($scope.npo.pubkeys.length < $scope.npo.n + 1) {
+			$scope.npo.error = 'XPL';
+			$scope.deployError ('XPL');
+			$scope.npo.loading = false;
+			return;
+		}
+
 		var pubkeys_raw = $scope.npo.pubkeys.map(function (hex /*: string*/) { return new buffer.Buffer (hex, 'hex'); });
 		var redeemScript = bitcoin.script.multisigOutput($scope.npo.n + 1, pubkeys_raw);
 
@@ -163,6 +180,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 			if (cumulative == 0 || cumulative - fee < 0) {
 				$scope.npo.error = 'XWE';
+				$scope.deployError ('XWE');
 				$scope.npo.loading = false;
 				return;
 			}
@@ -171,6 +189,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 				txb.addOutput($scope.npo.address, Math.floor ((cumulative - fee) * 100000000));
 			} catch (err) {
 				$scope.npo.error = 'XWD';
+				$scope.deployError ('XWD');
 				$scope.npo.loading = false;
 				return;
 			}
@@ -199,6 +218,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 				$scope.npo.loading = false;
 			}).error (function (data) {
 				$scope.npo.error = 'XNB';
+				$scope.deployError ('XNB');
 				$scope.npo.loading = false;	
 			});
 		});
@@ -239,11 +259,13 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		
 		if ($scope.user.backup.file === null) {
 			$scope.user.error = 'XNF';
+			$scope.deployError ('XNF');
 			return;
 		}
 			
 		if ($scope.user.backup.data === null) {
 			$scope.user.error = 'XNJ';
+			$scope.deployError ('XNJ');
 			return;
 		}
 			
@@ -251,6 +273,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			! ('address' in $scope.user.backup.data) ||
 			! ('pubkey' in $scope.user.backup.data)){
 			$scope.user.error = 'XNJ';
+			$scope.deployError ('XNJ');
 			return;
 		}
         
@@ -272,6 +295,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			pair2 = bitcoin.ECPair.fromWIF (priv2, bnetwork);
 		} catch (e) {
 			$scope.user.error = 'XWP';
+			$scope.deployError ('XWP');
 			$scope.user.loading = false;
 			return;
 		}
@@ -279,6 +303,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		var pub2 = pair2.getPublicKeyBuffer ().toString ('hex');
 		if (pub2 != $scope.user.backup.data.pubkey) {
 			$scope.user.error = 'XWP';
+			$scope.deployError ('XWP');
 			$scope.user.loading = false;
 			return;
 		}
@@ -293,6 +318,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 		if ($scope.user.backup.data.pubkeys.indexOf (pub1) == -1) {
 			$scope.user.error = 'XWM';
+			$scope.deployError ('XWM');
 			$scope.user.loading = false;
 			return;
 		}
@@ -313,6 +339,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 			if (cumulative == 0 || cumulative - fee < 0) {
 				$scope.user.error = 'XWE';
+				$scope.deployError ('XWE');
 				$scope.user.loading = false;
 				return;
 			}
@@ -321,6 +348,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 				txb.addOutput($scope.user.address, Math.floor ((cumulative - fee) * 100000000));
 			} catch (err) {
 				$scope.user.error = 'XWD';
+				$scope.deployError ('XWD');
 				$scope.user.loading = false;
 				return;
 			}
@@ -344,6 +372,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 				$scope.user.loading = false;
 			}).error (function (data) {
 				$scope.user.error = 'XNB';
+				$scope.deployError ('XNB');
 				$scope.user.loading = false;	
 			});
 		});

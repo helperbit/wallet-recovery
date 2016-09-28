@@ -86,6 +86,33 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Error</h4>
+            </div>
+            <div class="modal-body" align="center">
+                <i style="font-size:350%; color: #d01f2f;" class="fa fa-exclamation-triangle"></i>
+                <br><br>
+                <span ng-if="error.code == 'XWD'">Wrong destination address</span>
+                <span ng-if="error.code == 'XWE'">Empty wallet</span>
+                <span ng-if="error.code == 'XNB'">Error during transaction broadcast</span>
+                <span ng-if="error.code == 'XNJ'">Can't load the file or this is not a backup file</span>
+                <span ng-if="error.code == 'XNF'">Can't load the file</span>
+                <span ng-if="error.code == 'XWM'">Wrong mnemonic</span>
+                <span ng-if="error.code == 'XWP'">Wrong backup password</span>
+                <span ng-if="error.code == 'XPL'">Not enough admins</span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
 	<div ng-include="'views/home.html'"></div>
 	<div ng-include="'views/user.html'"></div>
 	<div ng-include="'views/npo.html'"></div>
