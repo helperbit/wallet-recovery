@@ -113,9 +113,29 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="verifiedModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Verified</h4>
+            </div>
+            <div class="modal-body" align="center">
+                <i style="font-size:450%; color: #05a852;" class="fa fa-check-circle"></i>
+                <br><br>
+                <p>The password is valid for the given backup file.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
 	<div ng-include="'views/home.html'"></div>
 	<div ng-include="'views/user.html'"></div>
 	<div ng-include="'views/npo.html'"></div>
-
+	<div ng-include="'views/backup.html'"></div>
 </body>
 </html>

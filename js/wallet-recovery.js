@@ -42,6 +42,14 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 					loading: false
                 };
                 break;
+
+            case 'backup':
+                $scope.backup = { 
+                    backup: { file: '', data: {}, password: '' },
+                    error: '',
+					loading: false
+                };
+                break;
         } 
     };
 
@@ -242,10 +250,83 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 
 
+	/* Backup checker */
+	$scope.loadBackupBackupFile = function (file) {
+		$scope.backup.error = '';
+		$scope.backup.backup.file = file;
+			
+		if (file === null) {
+			$scope.backup.backup.data = null;
+			return;
+		}
+			
+		var reader = new FileReader();
+			
+		reader.onload = function(event) {
+			var data = event.target.result;
+			$scope.backup.backup.data = JSON.parse(data);
+            console.log (data);
+		};
+		reader.readAsText (file);
+    };
 
 
+    $scope.verifyBackup = function () {
+		$scope.backup.error = '';
+		
+		if ($scope.backup.backup.file === null) {
+			$scope.backup.error = 'XNF';
+			$scope.deployError ('XNF');
+			return;
+		}
+			
+		if ($scope.backup.backup.data === null) {
+			$scope.backup.error = 'XNJ';
+			$scope.deployError ('XNJ');
+			return;
+		}
+			
+		if (! ('encprivkey' in $scope.backup.backup.data) ||
+			! ('pubkey' in $scope.backup.backup.data)){
+			$scope.backup.error = 'XNJ';
+			$scope.deployError ('XNJ');
+			return;
+		}
+        
+		/* Decrypt the key */
+		var hex2a = function (hex) {
+			var str = '';
+			for (var i = 0; i < hex.length; i += 2)
+				str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+			return str;
+		};
+			
+		$scope.backup.loading = true;
 
+		var privkeye = CryptoJS.AES.decrypt($scope.backup.backup.data.encprivkey, $scope.backup.backup.password, {iv: $scope.backup.backup.password});
+		var priv2 = hex2a (privkeye.toString ());
+			
+		var pair2 = null;
+		try {
+			pair2 = bitcoin.ECPair.fromWIF (priv2, bnetwork);
+		} catch (e) {
+			$scope.backup.error = 'XWP';
+			$scope.deployError ('XWP');
+			$scope.backup.loading = false;
+			return;
+		}
+			
+		var pub2 = pair2.getPublicKeyBuffer ().toString ('hex');
+		if (pub2 != $scope.backup.backup.data.pubkey) {
+			$scope.backup.error = 'XWP';
+			$scope.deployError ('XWP');
+			$scope.backup.loading = false;
+			return;
+		}
 
+		$('#verifiedModal').modal ('show');
+		$scope.backup.loading = false;
+	};
 
 
 
