@@ -6,11 +6,23 @@ var walletRecovery = angular.module('walletRecovery', [
 walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
     var bnetwork = bitcoin.networks.bitcoin;
 	var cnetwork = 'BTC';
-	var fee = 0.0002;
 
     $scope.tab = 'home';
 	$scope.transaction = { address: '', txid: '' };
 	$scope.error = { code: '' };
+
+
+	$scope.updateFee = function () {
+		$http.get ('https://bitcoinfees.21.co/api/v1/fees/recommended').success (function (data) {
+			$scope.fee = data
+		}).error (function (e) {
+			$scope.fee = {"fastestFee":80,"halfHourFee":80,"hourFee":70}	
+		});
+	};
+
+	$scope.calculateFee = function (inputn) {
+		return (2 * 34 + inputn * 180 + 10) * $scoe.fee['fastestFee'] / 100000000.0;
+	};
 
 	$scope.deployError = function (e) {
 		$scope.error.code = e;
@@ -195,6 +207,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			var txs = data.data.txs;
 			var txb = new bitcoin.TransactionBuilder (bnetwork);
 			var cumulative = 0.0;
+			var fee = $scope.calculateFee (txs.length);
 
 			for (var i = 0; i < txs.length; i++) {
 				cumulative += parseFloat (txs[i].value);
@@ -436,11 +449,13 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			var txs = data.data.txs;
 			var txb = new bitcoin.TransactionBuilder (bnetwork);
 			var cumulative = 0.0;
+			var fee = $scope.calculateFee (txs.length);
 
 			for (var i = 0; i < txs.length; i++) {
 				cumulative += parseFloat (txs[i].value);
 				txb.addInput (txs[i].txid, txs[i].output_no);
 			}
+
 
 			if (cumulative == 0 || cumulative - fee < 0) {
 				$scope.user.error = 'XWE';
