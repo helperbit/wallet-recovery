@@ -200,12 +200,12 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 
 		if ($scope.segwit) {
-			var witnessScript = bitcoin.script.multisig.output.encode ($scope.npo.n, pubkeys_raw);
+			var witnessScript = bitcoin.script.multisig.output.encode (parseInt ($scope.npo.n), pubkeys_raw);
 			var redeemScript = bitcoin.script.witnessScriptHash.output.encode (bitcoin.crypto.sha256(witnessScript));
 			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160(redeemScript));
 			var address = bitcoin.address.fromOutputScript(scriptPubKey, btnetwork);			
 		} else {
-			var redeemScript = bitcoin.script.multisig.output.encode ($scope.npo.n, pubkeys_raw);
+			var redeemScript = bitcoin.script.multisig.output.encode (parseInt ($scope.npo.n), pubkeys_raw);
 			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160 (redeemScript));
 			var address = bitcoin.address.fromOutputScript (scriptPubKey, btnetwork);
 		}
