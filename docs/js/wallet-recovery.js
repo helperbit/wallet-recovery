@@ -203,11 +203,11 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			var witnessScript = bitcoin.script.multisig.output.encode (parseInt ($scope.npo.n), pubkeys_raw);
 			var redeemScript = bitcoin.script.witnessScriptHash.output.encode (bitcoin.crypto.sha256(witnessScript));
 			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160(redeemScript));
-			var address = bitcoin.address.fromOutputScript(scriptPubKey, btnetwork);			
+			var address = bitcoin.address.fromOutputScript(scriptPubKey, bnetwork);			
 		} else {
 			var redeemScript = bitcoin.script.multisig.output.encode (parseInt ($scope.npo.n), pubkeys_raw);
 			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160 (redeemScript));
-			var address = bitcoin.address.fromOutputScript (scriptPubKey, btnetwork);
+			var address = bitcoin.address.fromOutputScript (scriptPubKey, bnetwork);
 		}
 
 		console.log (address);
@@ -463,11 +463,11 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			var witnessScript = bitcoin.script.multisig.output.encode (2, pubkeys_raw);
 			var redeemScript = bitcoin.script.witnessScriptHash.output.encode (bitcoin.crypto.sha256(witnessScript));
 			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160(redeemScript));
-			var address = bitcoin.address.fromOutputScript(scriptPubKey, btnetwork);			
+			var address = bitcoin.address.fromOutputScript(scriptPubKey, bnetwork);			
 		} else {
 			var redeemScript = bitcoin.script.multisig.output.encode (2, pubkeys_raw);
 			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160 (redeemScript));
-			var address = bitcoin.address.fromOutputScript (scriptPubKey, btnetwork);
+			var address = bitcoin.address.fromOutputScript (scriptPubKey, bnetwork);
 		}
 
 		/* Get unspent */
