@@ -4,13 +4,18 @@ var walletRecovery = angular.module('walletRecovery', [
 
 
 walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
-    var bnetwork = bitcoin.networks.testnet;
-	var cnetwork = 'BTCTEST';
+	if (bitcoinnetwork == 'btc') {
+		var bnetwork = bitcoin.networks.bitcoin;
+		var cnetwork = 'BTC';
+	} else {
+		var bnetwork = bitcoin.networks.testnet;
+		var cnetwork = 'BTCTEST';
+	}
 
     $scope.tab = 'home';
 	$scope.transaction = { address: '', txid: '' };
 	$scope.error = { code: '' };
-	$scope.segwit = false;
+	$scope.segwit = { segwit: false };
 
 	$http.get ('https://estimatesmartfee.com/json.json').success (function (data) {
 		$scope.fee = data;
@@ -46,7 +51,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
             case 'npo':
                 $scope.npo = { 
-					n: 2,
+					n: 3,
 					pubkeys: [],
                     address: '',
                     backup: [ { error: '', backpass: '', file: '', data: {}, password: '' } ],
@@ -122,7 +127,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 					! ('pubkey' in $scope.npo.backup[i].data) ||
 					! ('walletid' in $scope.npo.backup[i].data)) {
 
-					$scope.segwit = $scope.npo.backup[i].data.segwit || false;
+					$scope.segwit.segwit = $scope.npo.backup[i].data.segwit || false;
 					$scope.npo.backup[i].error = 'XNJ';
 					$scope.deployError ('XNJ');
 					$scope.npo.loading = false;
@@ -196,7 +201,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		var pubkeys_raw = $scope.npo.pubkeys.map(function (hex /*: string*/) { return new buffer.Buffer (hex, 'hex'); });
 
 
-		if ($scope.segwit) {
+		if ($scope.segwit.segwit) {
 			var witnessScript = bitcoin.script.multisig.output.encode (parseInt ($scope.npo.n), pubkeys_raw);
 			var redeemScript = bitcoin.script.witnessScriptHash.output.encode (bitcoin.crypto.sha256(witnessScript));
 			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160(redeemScript));
@@ -208,7 +213,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		}
 
 		console.log (address);
-
+		console.log ('segwit',$scope.segwit.segwit);
 
 		/* Get unspent */
 		$http.get ('https://chain.so/api/v2/get_tx_unspent/' + cnetwork + '/' + address).success (function (data) {
@@ -241,8 +246,8 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			/* Add signatures */
 			for (var j = 0; j < txb.tx.ins.length; j++) {
 				for (var z = 0; z < parseInt ($scope.npo.n); z++) {
-					if ($scope.segwit) {
-						txb.sign (j, $scope.npo.backup[z].pair, redeemScript, null, txs[i].value * 100000000, witnessScript);
+					if ($scope.segwit.segwit) {
+						txb.sign (j, $scope.npo.backup[z].pair, redeemScript, null, txs[j].value * 100000000, witnessScript);
 					} else {
 						txb.sign (j, $scope.npo.backup[z].pair, redeemScript);
 					}
@@ -393,7 +398,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		if (! ('encprivkey' in $scope.user.backup.data) ||
 			! ('address' in $scope.user.backup.data) ||
 			! ('pubkey' in $scope.user.backup.data)) {
-			$scope.segwit = $scope.user.backup.data.segwit || false;
+			$scope.segwit.segwit = $scope.user.backup.data.segwit || false;
 			$scope.user.error = 'XNJ';
 			$scope.deployError ('XNJ');
 			return;
@@ -456,7 +461,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		
 		var pubkeys_raw = $scope.user.backup.data.pubkeys.map(function (hex /*: string*/) { return new buffer.Buffer (hex, 'hex'); });
 
-		if ($scope.segwit) {
+		if ($scope.segwit.segwit) {
 			var witnessScript = bitcoin.script.multisig.output.encode (2, pubkeys_raw);
 			var redeemScript = bitcoin.script.witnessScriptHash.output.encode (bitcoin.crypto.sha256(witnessScript));
 			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160(redeemScript));
@@ -498,9 +503,9 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 			/* Add signatures */
 			for (var j = 0; j < txb.tx.ins.length; j++) {
-				if ($scope.segwit) {
-					txb.sign (j, pair1, redeemScript, null, txs[i].value * 100000000, witnessScript);
-					txb.sign (j, pair2, redeemScript, null, txs[i].value * 100000000, witnessScript);
+				if ($scope.segwit.segwit) {
+					txb.sign (j, pair1, redeemScript, null, txs[j].value * 100000000, witnessScript);
+					txb.sign (j, pair2, redeemScript, null, txs[j].value * 100000000, witnessScript);
 				} else {
 					txb.sign (j, pair1, redeemScript);
 					txb.sign (j, pair2, redeemScript);
