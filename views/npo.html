@@ -12,6 +12,10 @@
                 <span ng-if="npo.error == 'XPL'">Not enough admins</span>
             </div>
 
+            <br>
+            <input ng-model="segwit" ng-value="segwit" type="checkbox" id="segwit"> <b>Segwit</b>
+            <br><br>
+
             <div class="form-group">
                 <label for="inBackpass">Number of signatures:</label>
                 <input ng-model="npo.n" ng-value="npo.n" type="text" class="form-control" id="inBackpass" placeholder="Signatures">

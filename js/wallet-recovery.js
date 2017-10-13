@@ -10,18 +10,21 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
     $scope.tab = 'home';
 	$scope.transaction = { address: '', txid: '' };
 	$scope.error = { code: '' };
+	$scope.segwit = false;
 
 
 	$scope.updateFee = function () {
-		$http.get ('https://bitcoinfees.21.co/api/v1/fees/recommended').success (function (data) {
-			$scope.fee = data
+		$http.get ('https://estimatesmartfee.com/json.json').success (function (data) {
+			$scope.fee = data;
+			if ($scope.fee.length == 0)
+				$scope.fee = [ { conservative: 172 } ];
 		}).error (function (e) {
-			$scope.fee = {"fastestFee":80,"halfHourFee":80,"hourFee":70}	
+			$scope.fee = [ { conservative: 172 } ];
 		});
 	};
 
 	$scope.calculateFee = function (inputn) {
-		return (2 * 34 + inputn * 180 + 10) * $scoe.fee['fastestFee'] / 100000000.0;
+		return (2 * 34 + inputn * 180 + 10) * $scope.fee[0].conservative / 100000000.0;
 	};
 
 	$scope.deployError = function (e) {
@@ -120,7 +123,9 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 				if (! ('encprivkey' in $scope.npo.backup[i].data) ||
 					! ('pubkeysrv' in $scope.npo.backup[i].data) ||
 					! ('pubkey' in $scope.npo.backup[i].data) ||
-					! ('walletid' in $scope.npo.backup[i].data)){
+					! ('walletid' in $scope.npo.backup[i].data)) {
+
+					$scope.segwit = $scope.npo.backup[i].data.segwit || false;
 					$scope.npo.backup[i].error = 'XNJ';
 					$scope.deployError ('XNJ');
 					$scope.npo.loading = false;
@@ -182,7 +187,7 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		}
 
 		/* Validate number of key */
-		if ($scope.npo.pubkeys.length < (parseInt ($scope.npo.n) + 1)) {
+		if ($scope.npo.pubkeys.length < (parseInt ($scope.npo.n))) {
 			$scope.npo.error = 'XPL';
 			$scope.deployError ('XPL');
 			$scope.npo.loading = false;
@@ -192,12 +197,18 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 		/* Evalute the reedem script */
 		var pubkeys_raw = $scope.npo.pubkeys.map(function (hex /*: string*/) { return new buffer.Buffer (hex, 'hex'); });
-		var redeemScript = bitcoin.script.multisigOutput(parseInt ($scope.npo.n) + 1, pubkeys_raw);
 
 
-		/* Calculate address from pubkeys */
-		var scriptPubKey = bitcoin.script.scriptHashOutput(bitcoin.crypto.hash160(redeemScript));
-		var address = bitcoin.address.fromOutputScript(scriptPubKey, bnetwork);
+		if ($scope.segwit) {
+			var witnessScript = bitcoin.script.multisig.output.encode ($scope.npo.n, pubkeys_raw);
+			var redeemScript = bitcoin.script.witnessScriptHash.output.encode (bitcoin.crypto.sha256(witnessScript));
+			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160(redeemScript));
+			var address = bitcoin.address.fromOutputScript(scriptPubKey, btnetwork);			
+		} else {
+			var redeemScript = bitcoin.script.multisig.output.encode ($scope.npo.n, pubkeys_raw);
+			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160 (redeemScript));
+			var address = bitcoin.address.fromOutputScript (scriptPubKey, btnetwork);
+		}
 
 		console.log (address);
 
@@ -232,8 +243,12 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 			/* Add signatures */
 			for (var j = 0; j < txb.tx.ins.length; j++) {
-				for (var z = 0; z < parseInt ($scope.npo.n) + 1; z++) {
-					txb.sign (j, $scope.npo.backup[z].pair, redeemScript);
+				for (var z = 0; z < parseInt ($scope.npo.n); z++) {
+					if ($scope.segwit) {
+						txb.sign (j, $scope.npo.backup[z].pair, redeemScript, null, txs[i].value * 100000000, witnessScript);
+					} else {
+						txb.sign (j, $scope.npo.backup[z].pair, redeemScript);
+					}
 				}
 			}
 
@@ -380,7 +395,8 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 			
 		if (! ('encprivkey' in $scope.user.backup.data) ||
 			! ('address' in $scope.user.backup.data) ||
-			! ('pubkey' in $scope.user.backup.data)){
+			! ('pubkey' in $scope.user.backup.data)) {
+			$scope.segwit = $scope.user.backup.data.segwit || false;
 			$scope.user.error = 'XNJ';
 			$scope.deployError ('XNJ');
 			return;
@@ -442,7 +458,17 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 		}
 		
 		var pubkeys_raw = $scope.user.backup.data.pubkeys.map(function (hex /*: string*/) { return new buffer.Buffer (hex, 'hex'); });
-		var redeemScript = bitcoin.script.multisigOutput(2, pubkeys_raw);
+
+		if ($scope.segwit) {
+			var witnessScript = bitcoin.script.multisig.output.encode (2, pubkeys_raw);
+			var redeemScript = bitcoin.script.witnessScriptHash.output.encode (bitcoin.crypto.sha256(witnessScript));
+			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160(redeemScript));
+			var address = bitcoin.address.fromOutputScript(scriptPubKey, btnetwork);			
+		} else {
+			var redeemScript = bitcoin.script.multisig.output.encode (2, pubkeys_raw);
+			var scriptPubKey = bitcoin.script.scriptHash.output.encode (bitcoin.crypto.hash160 (redeemScript));
+			var address = bitcoin.address.fromOutputScript (scriptPubKey, btnetwork);
+		}
 
 		/* Get unspent */
 		$http.get ('https://chain.so/api/v2/get_tx_unspent/' + cnetwork + '/' + $scope.user.backup.data.address).success (function (data) {
@@ -475,8 +501,13 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 
 			/* Add signatures */
 			for (var j = 0; j < txb.tx.ins.length; j++) {
-				txb.sign (j, pair1, redeemScript);
-				txb.sign (j, pair2, redeemScript);
+				if ($scope.segwit) {
+					txb.sign (j, pair1, redeemScript, null, txs[i].value * 100000000, witnessScript);
+					txb.sign (j, pair2, redeemScript, null, txs[i].value * 100000000, witnessScript);
+				} else {
+					txb.sign (j, pair1, redeemScript);
+					txb.sign (j, pair2, redeemScript);
+				}
 			}
 
 			/* Create the signed transaction */

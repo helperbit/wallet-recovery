@@ -15,6 +15,10 @@
             <span ng-if="user.error == 'XNB'">Error during transaction broadcast</span>
         </div>
 
+        <br>
+        <input ng-model="segwit" ng-value="segwit" type="checkbox" id="segwit"> <b>Segwit</b>
+        <br><br>
+
         <div class="form-group">
             <label for="inMnemonic">Mnemonic (12 words passphrase):</label>
             <input ng-model="user.mnemonic" type="text" class="form-control" id="inMnemonic" placeholder="Mnemonic">
