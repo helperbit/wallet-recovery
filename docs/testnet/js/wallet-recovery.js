@@ -12,16 +12,13 @@ walletRecovery.controller('RecoveryCtrl', function($scope, $http) {
 	$scope.error = { code: '' };
 	$scope.segwit = false;
 
-
-	$scope.updateFee = function () {
-		$http.get ('https://estimatesmartfee.com/json.json').success (function (data) {
-			$scope.fee = data;
-			if ($scope.fee.length == 0)
-				$scope.fee = [ { conservative: 172 } ];
-		}).error (function (e) {
+	$http.get ('https://estimatesmartfee.com/json.json').success (function (data) {
+		$scope.fee = data;
+		if ($scope.fee.length == 0)
 			$scope.fee = [ { conservative: 172 } ];
-		});
-	};
+	}).error (function (e) {
+		$scope.fee = [ { conservative: 172 } ];
+	});
 
 	$scope.calculateFee = function (inputn) {
 		return (2 * 34 + inputn * 180 + 10) * $scope.fee[0].conservative / 100000000.0;
