@@ -1,0 +1,60 @@
+/* navbar-inverse */
+.navbar {
+	max-height: 50px !important;
+	min-height: 50px !important;
+	box-shadow: 0px 0px 5px rgba(51, 51, 51, 0.5) !important;
+}
+
+.navbar-nav > li > .dropdown-menu {
+    margin-top: -1px !important;
+}
+
+.navbar-brand {
+	padding: 0;
+	float: none;
+	padding-top: 0em;
+	padding-left: 20px;
+}
+
+.navbar-brand > img {
+    margin-top: -10px;
+    margin-left: 10px !important;
+}
+
+.navbar-inverse {
+	background-color: #feb737;
+	border-color: transparent;
+}
+.navbar-inverse	.navbar-brand {
+		color: #ffffff;
+}
+
+.navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:focus, .navbar-inverse .navbar-nav > .active > a:hover {
+    background-color: #eda626;
+}
+.navbar-inverse .navbar-nav > li > a {
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.navbar-inverse .navbar-nav > li {
+    background-color: #feb737;
+    z-index: 9999;
+}
+
+
+/* Button */
+.btn-red {
+    color: #fff; 
+    background-color: #d01f2f; 
+    text-transform: uppercase;
+    border: 0;
+    border-radius: 0;
+}
+
+.btn-red:hover {
+    background-color: #d01f2f; 
+    box-shadow: 0px 0px 4px #333;
+    color: #fff; 
+}

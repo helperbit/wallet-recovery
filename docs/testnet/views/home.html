@@ -1,0 +1,38 @@
+    <div class="container" ng-if="tab == 'home'">
+        <h1>Helperbit wallet recovery tool</h1>
+        <p>
+            Helperbit wallet recovery is a tool that Helperbit has developed for ease of mind of its users: 
+            its function is to free funds from your Helperbit wallet without our intervertion.
+            <br>
+            This means that if we disappear for any reason, your funds are still available to you.
+            <br>
+            Helperbit wallet recovery is a client-side software and can be downloaded from GitHub as a <a href="https://github.com/helperbit/wallet-recovery/archive/gh-pages.zip">Zip</a> (works with the Browser)
+            or can be used directly from this web page.
+        </p>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-12" align="center">
+                <h4>Select the type of wallet you want to recover:</h4>
+                <br>
+            </div>
+
+            <div class="col-md-3"></div>
+            <div class="col-md-3" align="center">
+                <i class="fa fa-4x fa-user"></i>
+                <br>
+                <br>
+                <button class="btn btn-red" ng-click="switchTab ('user')">Single user wallet</button>
+            </div>
+            <div class="col-md-3" align="center">
+                <i class="fa fa-4x fa-users"></i>
+                <br>
+                <br>
+                <button class="btn btn-red" ng-click="switchTab ('npo')">Organization wallet</button>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+
+        <br><br><br>
+        <p>If you have a backup file and its password, you can check that the password is correct <a href="#" ng-click="switchTab ('backup')">here</a>.</p>
+    </div>

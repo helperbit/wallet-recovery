@@ -1,0 +1,47 @@
+
+    <!-- Single user -->
+    <div class="container" ng-if="tab == 'user'">
+        <h1>Single user wallet recovery</h1>
+        <p>Insert the mnemonic, backup file and backup password, and put a valid Bitcoin address. Your funds will
+            be sent to the typed address.</p>
+
+        <div class="alert alert-danger" ng-if="user.error != ''">
+            <span ng-if="user.error == 'XNJ'">Can't load the file or this is not a backup file</span>
+            <span ng-if="user.error == 'XNF'">Can't load the file</span>
+            <span ng-if="user.error == 'XWM'">Wrong mnemonic</span>
+            <span ng-if="user.error == 'XWP'">Wrong backup password</span>
+            <span ng-if="user.error == 'XWD'">Wrong destination address</span>
+            <span ng-if="user.error == 'XWE'">Empty wallet</span>
+            <span ng-if="user.error == 'XNB'">Error during transaction broadcast</span>
+        </div>
+
+        <br>
+        <input ng-model="segwit" ng-value="segwit" type="checkbox" id="segwit"> <b>Segwit</b>
+        <br><br>
+
+        <div class="form-group">
+            <label for="inMnemonic">Mnemonic (12 words passphrase):</label>
+            <input ng-model="user.mnemonic" type="text" class="form-control" id="inMnemonic" placeholder="Mnemonic">
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label for="inBack">Backup file:</label>
+                    <input accept="application/json"  ngf-select="loadUserBackupFile($file);" type="file" class="form-control" id="inBack" placeholder="">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="inBackpass">Backup file password:</label>
+                    <input ng-model="user.backup.password" type="password" class="form-control" id="inBackpass" placeholder="Password">
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inAddress">Destination Bitcoin address:</label>
+            <input ng-model="user.address" type="text" class="form-control" id="inAddress" placeholder="Address">
+        </div>
+        <button ng-disabled="user.loading" class="btn btn-red btn-block" ng-click="recoverUser()">
+            <i class="fa fa-spin fa-refresh" ng-if="user.loading"></i> Recover your funds
+        </button>
+    </div>
