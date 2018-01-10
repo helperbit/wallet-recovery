@@ -7,7 +7,7 @@ our intervertion. This means that if we disappear for any reason, your funds are
 ## License
 
 ```
-Copyright (c) 2015-2017 Helperbit S.r.l
+Copyright (c) 2015-2018 Helperbit S.r.l
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
