@@ -15,7 +15,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "^1.5.8",
+    "angular": "=1.5.8",
     "bootstrap": "^3.3.7",
     "buffer": "^3.46.1",
     "bitcoinjs-lib": "github:bitcoinjs/bitcoinjs-lib#1157856ab05a676b310c0f0c65edf881b5b46849",
