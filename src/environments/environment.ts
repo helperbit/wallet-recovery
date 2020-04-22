@@ -1,9 +1,13 @@
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
+import { networks } from 'bitcoinjs-lib';
 
 export const environment = {
-  production: false
+	production: false,
+	testnet: true,
+	explorer: 'https://blockstream.info/testnet/',
+	network: networks.testnet
 };
 
 /*

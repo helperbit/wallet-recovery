@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/helperbit/wallet-recovery#readme",
   "scripts": {
+    "postinstall": "node patch/crypto",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
@@ -35,6 +36,12 @@
     "@angular/platform-browser": "~9.1.2",
     "@angular/platform-browser-dynamic": "~9.1.2",
     "@angular/router": "~9.1.2",
+    "bip39": "^3.0.2",
+    "bitcoinjs-lib": "^5.1.7",
+    "bootstrap": "^4.4.1",
+    "crypto-js": "^4.0.0",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.5.0",
     "rxjs": "~6.5.4",
     "tslib": "^1.10.0",
     "zone.js": "~0.10.2"
