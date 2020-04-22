@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
-import { of, Observable } from 'rxjs';
 import {
-	Unspent, BackupFile, checkBitcoinAddress, BitcoinKeys, decryptBackup, getTransaction,
+	Unspent, BackupFile, checkBitcoinAddress, BitcoinKeys, decryptBackup, getTransaction, mnemonicToKeys,
 	BackupFileSingle, getUnspent, prepareScripts, BackupFileMultisig, evaluteFee, getFees, broadcast
 } from './bitcoin.helper';
 import { environment } from 'src/environments/environment';
 import { Psbt, Transaction } from 'bitcoinjs-lib';
-import { mnemonicToKeys } from './bitcoin.mnemonic';
 import { HttpClient } from '@angular/common/http';
 
 @Component({

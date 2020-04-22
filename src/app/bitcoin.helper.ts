@@ -1,6 +1,8 @@
 import { Payment, payments, ECPair, Network, ECPairInterface, address } from 'bitcoinjs-lib';
 import { environment } from '../environments/environment';
 import { HttpClient } from '@angular/common/http';
+import { mnemonicToSeedSync } from 'bip39';
+import { fromSeed } from 'bip32';
 import AES from 'crypto-js/aes';
 import { Observable, of } from 'rxjs';
 
@@ -101,26 +103,6 @@ export function decryptBackup(backup: BackupFile, password: string, multisig: bo
 }
 
 
-export function toHexString(buffer: Buffer): string {
-	return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
-}
-
-export function toByteArray(hexString: string): Buffer {
-	const Buffer = require('safe-buffer').Buffer
-	const result = Buffer.alloc(hexString.length / 2);
-	let i = 0;
-	while (hexString.length >= 2) {
-		result[i] = parseInt(hexString.substring(0, 2), 16);
-		i += 1;
-		hexString = hexString.substring(2, hexString.length);
-	}
-	return result;
-}
-
-export function compressPublicKey(pk: string): string {
-	return toHexString(ECPair.fromPublicKey(toByteArray(pk)).publicKey);
-}
-
 export type Scripts = {
 	address: string;
 	scripttype: BitcoinScriptType;
@@ -166,6 +148,26 @@ export function prepareScripts(scripttype: BitcoinScriptType, n: number, pubkeys
 		}
 	}
 }
+
+
+/* Return the keypair from a mnemonic */
+export function mnemonicToKeys(secret: string): BitcoinKeys {
+	const fixSeed = function (seed) {
+		return seed
+			.replace('%20', ' ')
+			.replace('  ', ' ')
+			.replace('\n', '')
+			.replace('\r', '')
+			.trim();
+	};
+
+	const seed = mnemonicToSeedSync(fixSeed(secret));
+	const hd = ECPair.fromWIF(fromSeed(seed, environment.network).toWIF(), environment.network);
+	const priv1 = hd.toWIF();
+	const pub1 = hd.publicKey.toString('hex');
+	return { private: priv1, public: pub1, pair: hd };
+}
+
 
 
 export function scriptTypeOfBitcoinScriptType(st: BitcoinScriptType) {
