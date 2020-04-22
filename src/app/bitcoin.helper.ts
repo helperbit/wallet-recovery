@@ -201,12 +201,9 @@ export function getUnspent(httpClient: HttpClient, address: string): Observable<
 	return httpClient.get<Unspent[]>(`${environment.explorer}api/address/${address}/utxo`);
 }
 
-export function getBalance(httpClient: HttpClient, address: string): Observable<number> {
-	return of(0.0);
-}
 export function getTransaction(httpClient: HttpClient, txid: string): Observable<string> {
-	return of("");
+	return httpClient.get<string>(`${environment.explorer}api/tx/${txid}/hex`);
 }
 export function broadcast(httpClient: HttpClient, txhex: string): Observable<string> {
-	return of("");
+	return httpClient.post<string>(`${environment.explorer}api/tx`, txhex);
 }
