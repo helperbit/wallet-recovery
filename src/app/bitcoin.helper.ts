@@ -179,11 +179,8 @@ export function scriptTypeOfBitcoinScriptType(st: BitcoinScriptType) {
 	}
 }
 
-export function evaluteFee(fees, inputs, outputs, fast) {
-	let speed = 'halfHourFee';
-	if (fast) speed = 'fastestFee';
-
-	return (outputs * 34 + inputs * 180 + 10) * fees[speed] / 100000000.0;
+export function evaluteFee(fees, inputs, outputs) {
+	return (outputs * 34 + inputs * 180 + 10) * fees;
 }
 
 
@@ -194,6 +191,10 @@ export interface Unspent {
 	status: {
 		confirmed: string;
 	}
+}
+
+export function getFees(httpClient: HttpClient): Observable<{4: number}> {
+	return httpClient.get<{4: number}>(`${environment.explorer}api/fee-estimates`);
 }
 
 export function getUnspent(httpClient: HttpClient, address: string): Observable<Unspent[]> {

@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { of, Observable } from 'rxjs';
-import { Unspent, BackupFile, checkBitcoinAddress, BitcoinKeys, decryptBackup, getTransaction, 
-	BackupFileSingle, getUnspent, prepareScripts, BackupFileMultisig } from './bitcoin.helper';
+import {
+	Unspent, BackupFile, checkBitcoinAddress, BitcoinKeys, decryptBackup, getTransaction,
+	BackupFileSingle, getUnspent, prepareScripts, BackupFileMultisig, evaluteFee, getFees, broadcast
+} from './bitcoin.helper';
 import { environment } from 'src/environments/environment';
 import { Psbt, Transaction } from 'bitcoinjs-lib';
 import { mnemonicToKeys } from './bitcoin.mnemonic';
@@ -123,22 +125,32 @@ export class AppComponent {
 				return alert('Address ' + (this.modelUser.backup as BackupFileSingle).address + ' is empty');
 
 			const tx = new Psbt({ network: environment.network });
-			const inputsPreparedPromise = unspents.map(u => {
-				return this.prepareInput(u, this.modelUser.backup, pubkeys, 2);
-			})
-			Promise.all(inputsPreparedPromise).then(ll => {
+			Promise.all(unspents.map(u => this.prepareInput(u, this.modelUser.backup, pubkeys, 2))).then(ll => {
 				ll.forEach(i => tx.addInput(i));
 
+				const cumulativeValue = unspents.reduce((pv, cv) => pv + cv.value, 0);
+
 				// Calculate fee
+				getFees(this.httpClient).subscribe(fees => {
+					const fee = evaluteFee(fees[4], unspents.length, 1);
 
-				// Create output
+					tx.addOutput({ address: this.modelUser.destination, value: cumulativeValue - fee });
 
-				tx.signAllInputs(keys[0].pair);
-				tx.signAllInputs(keys[1].pair);
-				tx.finalizeAllInputs();
-				const txhex = tx.toHex();
+					tx.signAllInputs(keys[0].pair);
+					tx.signAllInputs(keys[1].pair);
+					tx.finalizeAllInputs();
+					const txhex = tx.toHex();
 
-				// braodcast
+					// braodcast
+					broadcast(this.httpClient, txhex).subscribe(txid => {
+						alert('Broadcasted transaction ' + txid + ' of value ' + (cumulativeValue / 100000000));
+						this.activeSection = 'home';
+					}, (err) => {
+						alert('Error: ' + err);
+					});
+				}, (err) => {
+					alert('Error: ' + err);
+				});
 			}).catch(err => {
 				alert('Error: ' + err);
 			});
@@ -157,7 +169,7 @@ export class AppComponent {
 				return alert('Invalid backup file for admin ' + i);
 
 			try {
-				keys.push(decryptBackup(this.modelUser.backup, this.modelUser.backupPass, true));
+				keys.push(decryptBackup(this.modelNPO.admins[i].backup, this.modelNPO.admins[i].backupPass, true));
 			} catch (err) {
 				switch (err) {
 					case 'XNJ':
@@ -168,6 +180,45 @@ export class AppComponent {
 			}
 		}
 
+		const pubkeys = keys.map(k => k.public);
+		const address = prepareScripts(this.modelNPO.admins[0].backup.scripttype, 3, pubkeys, environment.network).address;
+
+		getUnspent(this.httpClient, address).subscribe(unspents => {
+			if (unspents.length == 0)
+				return alert('Address ' + address + ' is empty');
+
+			const tx = new Psbt({ network: environment.network });
+			Promise.all(unspents.map(u => this.prepareInput(u, this.modelNPO.admins[0].backup, pubkeys, 3))).then(ll => {
+				ll.forEach(i => tx.addInput(i));
+
+				const cumulativeValue = unspents.reduce((pv, cv) => pv + cv.value, 0);
+
+				// Calculate fee
+				getFees(this.httpClient).subscribe(fees => {
+					const fee = evaluteFee(fees[4], unspents.length, 1);
+
+					tx.addOutput({ address: this.modelUser.destination, value: cumulativeValue - fee });
+
+					tx.signAllInputs(keys[0].pair);
+					tx.signAllInputs(keys[1].pair);
+					tx.signAllInputs(keys[2].pair);
+					tx.finalizeAllInputs();
+					const txhex = tx.toHex();
+
+					// braodcast
+					broadcast(this.httpClient, txhex).subscribe(txid => {
+						alert('Broadcasted transaction ' + txid + ' of value ' + (cumulativeValue / 100000000));
+						this.activeSection = 'home';
+					}, (err) => {
+						alert('Error: ' + err);
+					});
+				}, (err) => {
+					alert('Error: ' + err);
+				});
+			}).catch(err => {
+				alert('Error: ' + err);
+			});
+		});
 	}
 
 	onFileChange(t: 'user' | 'npo', adminNumber, event) {
