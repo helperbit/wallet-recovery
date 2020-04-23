@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import {
 	Unspent, BackupFile, checkBitcoinAddress, BitcoinKeys, decryptBackup, getTransaction, mnemonicToKeys,
-	BackupFileSingle, getUnspent, prepareScripts, BackupFileMultisig, evaluteFee, getFees, broadcast
+	BackupFileSingle, getUnspent, prepareScripts, evaluteFee, getFees, broadcast
 } from './bitcoin.helper';
 import { environment } from 'src/environments/environment';
 import { Psbt, Transaction } from 'bitcoinjs-lib';
@@ -81,13 +81,14 @@ export class AppComponent {
 
 				return resolve(input);
 			}, (error) => {
+				alert ("Error getTransaction: " + JSON.stringify(error))
 				return reject(error);
 			});
 		});
 	}
 
 	submitUser() {
-		let keys: BitcoinKeys[];
+		let keys: BitcoinKeys[] = [];
 		console.log(this.modelUser);
 
 		if (!checkBitcoinAddress(this.modelUser.destination))
@@ -106,12 +107,12 @@ export class AppComponent {
 					return alert('Invalid backup password');
 			}
 		}
-
 		try {
 			keys.push(mnemonicToKeys(this.modelUser.mnemonic));
 		} catch (err) {
 			return alert('Invalid mnemonic');
 		}
+		console.log(keys, (this.modelUser.backup as BackupFileSingle).pubkeys);
 
 		if ((this.modelUser.backup as BackupFileSingle).pubkeys.indexOf(keys[1].public) == -1)
 			return alert("Invalid mnemonic");
@@ -128,7 +129,6 @@ export class AppComponent {
 
 				const cumulativeValue = unspents.reduce((pv, cv) => pv + cv.value, 0);
 
-				// Calculate fee
 				getFees(this.httpClient).subscribe(fees => {
 					const fee = evaluteFee(fees[4], unspents.length, 1);
 
@@ -137,26 +137,30 @@ export class AppComponent {
 					tx.signAllInputs(keys[0].pair);
 					tx.signAllInputs(keys[1].pair);
 					tx.finalizeAllInputs();
-					const txhex = tx.toHex();
+					const txhex = tx.extractTransaction().toHex();
 
 					// braodcast
 					broadcast(this.httpClient, txhex).subscribe(txid => {
-						alert('Broadcasted transaction ' + txid + ' of value ' + (cumulativeValue / 100000000));
+						const msg = 'Broadcasted transaction ' + txid + ' of value ' + (cumulativeValue / 100000000);
+						console.log(msg);
+						alert(msg);
 						this.activeSection = 'home';
 					}, (err) => {
-						alert('Error: ' + err);
+						alert('Error broadcast: ' + JSON.stringify(err));
 					});
 				}, (err) => {
-					alert('Error: ' + err);
+					alert('Error getFees: ' + JSON.stringify(err));
 				});
 			}).catch(err => {
-				alert('Error: ' + err);
+				alert('Error prepareInputs: ' + JSON.stringify(err));
 			});
+		}, (err) => {
+			alert('Error getUnspent: ' + JSON.stringify(err));
 		});
 	}
 
 	submitNPO() {
-		let keys: BitcoinKeys[];
+		let keys: BitcoinKeys[] = [];
 		console.log(this.modelNPO);
 
 		if (!checkBitcoinAddress(this.modelNPO.destination))
@@ -201,11 +205,13 @@ export class AppComponent {
 					tx.signAllInputs(keys[1].pair);
 					tx.signAllInputs(keys[2].pair);
 					tx.finalizeAllInputs();
-					const txhex = tx.toHex();
+					const txhex = tx.extractTransaction().toHex();
 
 					// braodcast
 					broadcast(this.httpClient, txhex).subscribe(txid => {
-						alert('Broadcasted transaction ' + txid + ' of value ' + (cumulativeValue / 100000000));
+						const msg = 'Broadcasted transaction ' + txid + ' of value ' + (cumulativeValue / 100000000);
+						console.log(msg);
+						alert(msg);
 						this.activeSection = 'home';
 					}, (err) => {
 						alert('Error: ' + err);

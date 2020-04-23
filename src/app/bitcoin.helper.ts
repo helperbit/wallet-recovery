@@ -1,6 +1,6 @@
 import { Payment, payments, ECPair, Network, ECPairInterface, address } from 'bitcoinjs-lib';
 import { environment } from '../environments/environment';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { mnemonicToSeedSync } from 'bip39';
 import { fromSeed } from 'bip32';
 import AES from 'crypto-js/aes';
@@ -195,8 +195,8 @@ export interface Unspent {
 	}
 }
 
-export function getFees(httpClient: HttpClient): Observable<{4: number}> {
-	return httpClient.get<{4: number}>(`${environment.explorer}api/fee-estimates`);
+export function getFees(httpClient: HttpClient): Observable<{ 4: number }> {
+	return httpClient.get<{ 4: number }>(`${environment.explorer}api/fee-estimates`);
 }
 
 export function getUnspent(httpClient: HttpClient, address: string): Observable<Unspent[]> {
@@ -204,8 +204,9 @@ export function getUnspent(httpClient: HttpClient, address: string): Observable<
 }
 
 export function getTransaction(httpClient: HttpClient, txid: string): Observable<string> {
-	return httpClient.get<string>(`${environment.explorer}api/tx/${txid}/hex`);
+	return httpClient.get(`${environment.explorer}api/tx/${txid}/hex`, { responseType: 'text' });
 }
+
 export function broadcast(httpClient: HttpClient, txhex: string): Observable<string> {
-	return httpClient.post<string>(`${environment.explorer}api/tx`, txhex);
+	return httpClient.post(`${environment.explorer}api/tx`, txhex, { responseType: 'text' });
 }
