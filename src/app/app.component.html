@@ -1,0 +1,123 @@
+<app-header [(active)]="activeSection"></app-header>
+
+<section class="jumbotron text-center" *ngIf="activeSection == 'home'">
+	<div class="container">
+		<h1>Helperbit wallet recovery tool</h1>
+		<p class="lead text-muted">Helperbit wallet recovery is a tool that Helperbit has developed for ease of mind of
+			its users: its function is to free funds from your Helperbit wallet without our intervertion.<br>
+			This means that if we disappear for any reason, your funds are still available to you.<br>
+			Helperbit wallet recovery is a client-side software and can be downloaded from GitHub as a Zip (works with
+			the Browser) or can be used directly from this web page. </p>
+		<br>
+		<p>
+			<a href="#" class="btn btn-select btn-primary btn-lg" (click)="activeSection='user'">
+				<i class="fa fa-user"></i>
+				User wallet recovery
+			</a>
+			<a href="#" class="btn btn-select btn-secondary btn-lg" (click)="activeSection='npo'">
+				<i class="fa fa-users"></i>
+				NPO wallet recovery
+			</a>
+		</p>
+	</div>
+</section>
+
+
+<section class="container" *ngIf="activeSection == 'user'">
+	<br>
+	<h1>User wallet recovery</h1>
+	<p>Insert the mnemonic, backup file and backup password, and put a valid Bitcoin address. Your funds will be sent to
+		the typed address.</p>
+
+	<form class="needs-validation">
+		<div class="row">
+			<div class="col-md-12 mb-3">
+				<label for="mnemonic">Mnemonic (12 words passphrase):</label>
+				<input type="text" class="form-control" id="mnemonic" name="mnemonic" [(ngModel)]="modelUser.mnemonic" placeholder="Mnemonic" value="" required>
+				<div class="invalid-feedback">Passphrase is required</div>
+			</div>
+			<div class="col-md-7 mb-3">
+				<label for="backup">Backup file:</label>
+				<input type="file" class="form-control" id="backup" name="backup" (change)="onFileChange('user', null, $event)" placeholder="Backup file" value="" required>
+				<div class="invalid-feedback">Backup file is required</div>
+			</div>
+			<div class="col-md-5 mb-3">
+				<label for="backuppass">Backup password:</label>
+				<input type="text" class="form-control" id="backuppass" name="backuppass" [(ngModel)]="modelUser.backupPass" placeholder="Backup password" value="" required>
+				<div class="invalid-feedback">Backup password is required</div>
+			</div>
+			<div class="col-md-12 mb-3">
+				<label for="destination">Destination address:</label>
+				<input type="text" class="form-control" id="destination" name="destination" [(ngModel)]="modelUser.destination" placeholder="Address" value="" required>
+				<div class="invalid-feedback">Destination address is required</div>
+			</div>
+		</div>
+	</form>
+	<a href="#" class="btn btn-block btn-danger btn-lg" (click)="submitUser()"><i class="fa fa-send"></i> Recover your funds</a>
+</section>
+
+
+
+<section class="container" *ngIf="activeSection == 'npo'">
+	<br>
+	<h1>Organization wallet recovery</h1>
+	<p>Insert the backup file and backup password for every admin of the wallet, and put a valid Bitcoin address. Your funds will be sent to the typed address.</p>
+
+	<form class="needs-validation">
+		<div class="row">
+			<div class="col-md-12 mb-3">
+				<label for="destination">Destination address:</label>
+				<input type="text" class="form-control" id="destination" name="destination" [(ngModel)]="modelNPO.destination" placeholder="Address" value="" required>
+				<div class="invalid-feedback">Destination address is required</div>
+			</div>
+		</div>
+		<div class="row admin">
+			<div class="col-md-12">
+				<h4>Admin 1</h4>
+			</div>
+			<div class="col-md-7 mb-3">
+				<label for="backup0">Backup file:</label>
+				<input type="file" class="form-control" id="backup0" name="backup0" (change)="onFileChange('npo', 0, $event)" placeholder="Backup file" value="" required>
+				<div class="invalid-feedback">Backup file is required</div>
+			</div>
+			<div class="col-md-5 mb-3">
+				<label for="backuppass0">Backup password:</label>
+				<input type="text" class="form-control" id="backuppass0" name="backuppass0" [(ngModel)]="modelNPO.admins[0].backupPass" placeholder="Backup password" value="" required>
+				<div class="invalid-feedback">Backup password is required</div>
+			</div>
+		</div>
+		<div class="row admin">
+			<div class="col-md-12">
+				<h4>Admin 2</h4>
+			</div>
+			<div class="col-md-7 mb-3">
+				<label for="backup1">Backup file:</label>
+				<input type="file" class="form-control" id="backup1" name="backup1" (change)="onFileChange('npo', 1, $event)" placeholder="Backup file" value="" required>
+				<div class="invalid-feedback">Backup file is required</div>
+			</div>
+			<div class="col-md-5 mb-3">
+				<label for="backuppass1">Backup password:</label>
+				<input type="text" class="form-control" id="backuppass1" name="backuppass1" [(ngModel)]="modelNPO.admins[1].backupPass" placeholder="Backup password" value="" required>
+				<div class="invalid-feedback">Backup password is required</div>
+			</div>
+		</div>
+		<div class="row admin">
+			<div class="col-md-12">
+				<h4>Admin 3</h4>
+			</div>
+			<div class="col-md-7 mb-3">
+				<label for="backup2">Backup file:</label>
+				<input type="file" class="form-control" id="backup2" name="backup2" (change)="onFileChange('npo', 2, $event)" placeholder="Backup file" value="" required>
+				<div class="invalid-feedback">Backup file is required</div>
+			</div>
+			<div class="col-md-5 mb-3">
+				<label for="backuppass2">Backup password:</label>
+				<input type="text" class="form-control" id="backuppass2" name="backuppass2" [(ngModel)]="modelNPO.admins[2].backupPass" placeholder="Backup password" value="" required>
+				<div class="invalid-feedback">Backup password is required</div>
+			</div>
+		</div>
+	</form>
+	<br>
+	<a href="#" class="btn btn-block btn-danger btn-lg" (click)="submitNPO()"><i class="fa fa-send"></i> Recover your funds</a>
+</section>
+<br>
