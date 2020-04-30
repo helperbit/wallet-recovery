@@ -61,9 +61,11 @@ export class AppComponent {
 				const utxraw: any = Transaction.fromBuffer(txraw).outs[input.index];
 				delete utxraw.address;
 				utxraw.script = Buffer.from(utxraw.script, 'hex');
-				let sc = prepareScripts(backup.scripttype, n, pubkeys, environment.network);
+				let sc = prepareScripts(backup.scripttype || 'p2sh-p2wsh', n, pubkeys, environment.network);
 
-				switch (backup.scripttype) {
+				console.log (sc);
+
+				switch (backup.scripttype || 'p2sh-p2wsh') {
 					case 'p2wsh':
 						input.witnessUtxo = utxraw;
 						input.witnessScript = sc.p2wsh.redeem.output;
@@ -117,6 +119,9 @@ export class AppComponent {
 		if ((this.modelUser.backup as BackupFileSingle).pubkeys.indexOf(keys[1].public) == -1)
 			return alert("Invalid mnemonic");
 
+		if ((this.modelUser.backup as BackupFileSingle).pubkeys.indexOf(keys[0].public) == -1)
+			return alert("Wrong backup file");
+
 		const pubkeys = (this.modelUser.backup as BackupFileSingle).pubkeys;
 
 		getUnspent(this.httpClient, (this.modelUser.backup as BackupFileSingle).address).subscribe(unspents => {
@@ -125,6 +130,7 @@ export class AppComponent {
 
 			const tx = new Psbt({ network: environment.network });
 			Promise.all(unspents.map(u => this.prepareInput(u, this.modelUser.backup, pubkeys, 2))).then(ll => {
+				console.log(ll);
 				ll.forEach(i => tx.addInput(i));
 
 				const cumulativeValue = unspents.reduce((pv, cv) => pv + cv.value, 0);
@@ -132,7 +138,7 @@ export class AppComponent {
 				getFees(this.httpClient).subscribe(fees => {
 					const fee = evaluteFee(fees[4], unspents.length, 1);
 
-					tx.addOutput({ address: this.modelUser.destination, value: cumulativeValue - fee });
+					tx.addOutput({ address: this.modelUser.destination, value: Math.floor(cumulativeValue - fee) });
 
 					tx.signAllInputs(keys[0].pair);
 					tx.signAllInputs(keys[1].pair);
@@ -199,7 +205,7 @@ export class AppComponent {
 				getFees(this.httpClient).subscribe(fees => {
 					const fee = evaluteFee(fees[4], unspents.length, 1);
 
-					tx.addOutput({ address: this.modelUser.destination, value: cumulativeValue - fee });
+					tx.addOutput({ address: this.modelNPO.destination, value: Math.floor(cumulativeValue - fee) });
 
 					tx.signAllInputs(keys[0].pair);
 					tx.signAllInputs(keys[1].pair);
